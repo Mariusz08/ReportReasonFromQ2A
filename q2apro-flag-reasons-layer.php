@@ -1,22 +1,17 @@
 <?php
 
-/*
-	Plugin Name: q2apro Flag Reasons
-*/
-
 class qa_html_theme_layer extends qa_html_theme_base
 {
 	
-	function head_script()
+	public function head_script()
 	{
 		qa_html_theme_base::head_script();
 		
-		if(qa_is_logged_in() && $this->template=='question')
-		{
+		if(qa_is_logged_in() && $this->template === 'question') {
 			$this->output('
 				<script>
-					var flagAjaxURL = "'.qa_path('ajaxflagger').'";
-					var flagQuestionid = '.$this->content['q_view']['raw']['postid'].';
+					const flagAjaxURL = "'.qa_path('ajaxflagger').'";
+					const flagQuestionid = '.$this->content['q_view']['raw']['postid'].';
 				</script>
 			');
 			
@@ -26,54 +21,39 @@ class qa_html_theme_layer extends qa_html_theme_base
 			');
 		}
 		
-	} // end head_script
-	
-	function q_view_buttons($q_view)
+	}
+	public function q_view_buttons($q_view)
 	{
-		// change button "Melden" (Spam) for jquery by modifying $q_view['form']
-		if(qa_is_logged_in() && isset($q_view['form']['buttons']['flag']) && isset($q_view['raw']['postid']))
-		{
-			// remove default input tags from flag input 
+		if(qa_is_logged_in() && isset($q_view['form']['buttons']['flag']) && isset($q_view['raw']['postid'])) {
 			// $q_view['form']['buttons']['flag']['tags'] is "name="q_doflag" onclick="qa_show_waiting_after(this, false);""
 			$q_view['form']['buttons']['flag']['tags'] = 'data-postid="'.$q_view['raw']['postid'].'" data-posttype="q" ';
 		}
-		
-		// default method call outputs the form buttons
 		qa_html_theme_base::q_view_buttons($q_view);
 	}
 	
 	public function a_item_buttons($a_item)
 	{
-		// change button "Melden" (Spam) for jquery by modifying $q_view['form']
-		if(qa_is_logged_in() && isset($a_item['form']['buttons']['flag']) && isset($a_item['raw']['postid']))
-		{
+		if(qa_is_logged_in() && isset($a_item['form']['buttons']['flag']) && isset($a_item['raw']['postid'])) {
 			// remove default input tags from flag input 
 			// $q_view['form']['buttons']['flag']['tags'] is "name="q_doflag" onclick="qa_show_waiting_after(this, false);""
 			$a_item['form']['buttons']['flag']['tags'] = 'data-postid="'.$a_item['raw']['postid'].'" data-posttype="a" ';
 		}
-		
-		// default method call outputs the form buttons
 		qa_html_theme_base::a_item_buttons($a_item);
 	}
 	
 	public function c_item_buttons($c_item)
 	{
-		// change button "Melden" (Spam) for jquery by modifying $q_view['form']
-		if(qa_is_logged_in() && isset($c_item['form']['buttons']['flag']) && isset($c_item['raw']['postid']))
-		{
+		if(qa_is_logged_in() && isset($c_item['form']['buttons']['flag']) && isset($c_item['raw']['postid'])) {
 			// remove default input tags from flag input 
 			// $q_view['form']['buttons']['flag']['tags'] is "name="q_doflag" onclick="qa_show_waiting_after(this, false);""
 			$c_item['form']['buttons']['flag']['tags'] = 'data-postid="'.$c_item['raw']['postid'].'" data-posttype="c" data-parentid="'.$c_item['raw']['parentid'].'" ';
 		}
-		
-		// default method call outputs the form buttons
 		qa_html_theme_base::c_item_buttons($c_item);
 	}
 
 	public function body_hidden()
 	{
-		if(qa_is_logged_in() && $this->template=="question")
-		{
+		if(qa_is_logged_in() && $this->template === 'question') {
 			$this->output('
 			<div id="flagbox-popup">
 				<div id="flagbox-center">
@@ -117,93 +97,77 @@ class qa_html_theme_layer extends qa_html_theme_base
 						
 						<div class="closer">X</div>
 					</div>
-				</div> <!-- flagbox-popup -->
-			</div> <!-- flagbox-center -->
+				</div> 
+			</div>
 			');
 		}
-		
-		// default method call outputs the form buttons
 		qa_html_theme_base::body_hidden();
 		
-	} // END function body_hidden()
+	}
 	
 	public function post_tags($post, $class)
 	{
-		// default method call outputs the form buttons
 		qa_html_theme_base::post_tags($post, $class);
-		
-		// question
-		if($class=='qa-q-view')
-		{
-			$postid = $post['raw']['postid'];
+ini_set('display_errors', 1);
+		if($class === 'qa-q-view') {
+			$postId = $post['raw']['postid'];
+			$flagReasons = q2apro_get_postflags($postId);
 			
-			// get reasons from table ^flagreasons
-			$flagreasons = q2apro_get_postflags($postid);
-			
-			if(!empty($flagreasons))
-			{
-				$flagsout = '
+			if(!empty($flagReasons)) {
+				$flagsOut = '
 					<ul class="qa-flagreason-list">
 				';
 				
-				foreach($flagreasons as $f)
-				{
-					$userhandle = qa_userid_to_handle($f['userid']);
+				foreach ($flagReasons as $f) {
+					$userHandle = qa_userid_to_handle($f['userid']);
 					$reason = q2apro_flag_reasonid_to_readable($f['reasonid']);
 					$notice = $f['notice'];
 					
-					if(!empty($notice))
-					{
+					if(!empty($notice)) {
 						$notice = '
 						| 
 						<span class="flagreason-notice">'.$notice.'</span>
 						';
 					}
-					$flagsout .= '
+					$flagsOut .= '
 					<li>
 						<span class="flagreason-what">'.$reason.'</span>
 						| 
-						<span class="flagreason-who"><a href="'.qa_path('user').'/'.$userhandle.'">'.$userhandle.'</a></span>
+						<span class="flagreason-who"><a href="'.qa_path('user').'/'.$userHandle.'">'.$userHandle.'</a></span>
 						'.$notice.'
 					</li>
 					';
 				}
 				
-				$flagsout .= '
-					</ul> <!-- qa-flagreason-list -->
+				$flagsOut .= '
+					</ul>
 				';
-
-				// add flag info to flag output
-				$this->output('
-				<div class="qa-flag-wrap">
-					<div class="qa-flagreasons">
-						'.$flagsout.'
+				if(qa_get_logged_in_level() > QA_USER_LEVEL_EXPERT) {
+				    $this->output('
+				    <div class="qa-flag-wrap">
+				      	<div class="qa-flagreasons">
+                                      	'.$flagsOut.'
 					</div>
 				</div>
 				');
-			}
-		}
-	} // END function post_tags($post, $class)
-	
-	public function post_meta_flags($post, $class)
-	{
-		if(!empty($post['flags']['suffix']))
-		{
-			if($class=='qa-a-item' || $class=='qa-c-item')
-			{
-				$flaginfo = q2apro_count_postflags_output($post['raw']['postid']);
-				
-				if(!empty($flaginfo))
-				{
-					// add flag info to flag output
-					$post['flags']['suffix'] .= ': <br>'.$flaginfo;
 				}
 			}
 		}
-		
-		// default method call outputs the form buttons
+	}
+	
+	public function post_meta_flags($post, $class)
+	{
+		if(!empty($post['flags']['suffix'])) {
+			if($class === 'qa-a-item' || $class === 'qa-c-item') {
+				$flagInfo = q2apro_count_postflags_output($post['raw']['postid']);
+				
+				if(!empty($flagInfo)) {
+					$post['flags']['suffix'] .= ': <br>'.$flagInfo;
+				}
+			}
+		}
 		qa_html_theme_base::post_meta_flags($post, $class);
 	}
 
-} // end qa_html_theme_layer
+}
 

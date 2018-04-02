@@ -1,13 +1,16 @@
 $(document).ready(function()
 {
+
+	
+
 	// prevent submit
 	$(".qa-form-light-button-flag").attr("type", "button");
 	
 	$(".qa-form-light-button-flag").click( function()
 	{
-		var postid = $(this).data("postid");
-		var posttype = $(this).data("posttype");
-		var parentid = $(this).data("parentid");
+		var postId = $(this).data("postid");
+		var postType = $(this).data("posttype");
+		var parentId = $(this).data("parentid");
 		
 		// remove button so no double inserts
 		// $(this).remove();
@@ -24,27 +27,27 @@ $(document).ready(function()
 		
 		$(".qa-go-flag-send-button").click( function()
 		{
-			var flagreason = $("input[name=qa-spam-reason-radio]:checked").val();
-			var flagnotice = $(".qa-spam-reason-text").val();
+			const flagReason = $("input[name=qa-spam-reason-radio]:checked").val();
+			const flagNotice = $(".qa-spam-reason-text").val();
 			
-			var dataArray = {};
+			let dataArray = {};
 				dataArray.questionid= flagQuestionid;
-				dataArray.postid= postid;
-				dataArray.posttype= posttype;
-				dataArray.parentid= parentid;
-				dataArray.reasonid= flagreason;
-				dataArray.notice= flagnotice;
+				dataArray.postid= postId;
+				dataArray.posttype= postType;
+				dataArray.parentid= parentId;
+				dataArray.reasonid= flagReason;
+				dataArray.notice= flagNotice;
 			
 			
-			var senddata = JSON.stringify(dataArray);
-			console.log("sending: "+senddata);
-console.log(flagAjaxURL);
+			const sendData = JSON.stringify(dataArray);
+			console.log("sending: "+sendData);
+                        console.log(flagAjaxURL);
 
 			// send ajax
 			$.ajax({
 				 type: "POST",
 				 url: flagAjaxURL,
-				 data: { ajaxdata: senddata },
+				 data: { ajaxdata: sendData },
 				 dataType:"json",
 				 cache: false,
 				 success: function(data)

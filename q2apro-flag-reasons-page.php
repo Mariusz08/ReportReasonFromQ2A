@@ -1,46 +1,39 @@
 <?php
-/*
-	Plugin Name: q2apro Flag Reasons
-*/
 
 class q2apro_flag_reasons_page
 {
 	
-	var $directory;
-	var $urltoroot;
+	private $directory;
+	private $urlToRoot;
 	
-	function load_module($directory, $urltoroot)
+	public function load_module($directory, $urlToRoot)
 	{
 		$this->directory = $directory;
-		$this->urltoroot = $urltoroot;
+		$this->urlToRoot = $urlToRoot;
 	}
-	
-	// for display in admin interface under admin/pages
-	function suggest_requests() 
+
+	public function suggest_requests() 
 	{	
-		return array(
-			array(
+		return [
+			[
 				'title' => 'Ajax Flagger', // title of page
 				'request' => 'ajaxflagger', // request name
 				'nav' => 'M', // 'M'=main, 'F'=footer, 'B'=before main, 'O'=opposite main, null=none
-			),
-		);
+			],
+		];
 	}
-	
-	// for url query
-	function match_request($request)
+
+	public function match_request($request)
 	{
-		if ($request=='ajaxflagger') 
-		{
+		if ($request === 'ajaxflagger') {
 			return true;
 		}
 
 		return false;
 	}
 
-	function process_request($request)
+	public function process_request($request)
 	{	
-ini_set('display_errors', 1);
 		/*** 
 		Incoming reasonid for flags:
 		1 - spam
@@ -50,189 +43,149 @@ ini_set('display_errors', 1);
 		5 - migrate
 		6 - other
 		*/
-		
-		// only logged in users
-		if(!qa_is_logged_in())
-		{
+
+		if(!qa_is_logged_in()) {
 			exit();
 		}
-		
-		
-		// AJAX post: we received post data, so it should be the ajax call with flag data
-		//$transferString = qa_post_text('ajaxdata');
-		$transferString=$_POST['ajaxdata'];
-		if(!empty($transferString)) 
-		{
-			$newdata = json_decode($transferString, true);
-			$newdata = str_replace('&quot;', '"', $newdata); // see stackoverflow.com/questions/3110487/
 
-			$questionid = (int)$newdata['questionid'];
-			$postid = (int)$newdata['postid'];
-			$posttype = $newdata['posttype'];
-			$parentid = empty($newdata['parentid']) ? null : (int)$newdata['parentid']; // only C
-			$reasonid = (int)$newdata['reasonid'];
-			$notice = empty($newdata['notice']) ? null : trim($newdata['notice']);
+		$transferString=$_POST['ajaxdata'];
+		if(!empty($transferString)) {
+			$newData = json_decode($transferString, true);
+			$newData = str_replace('&quot;', '"', $newData); // see stackoverflow.com/questions/3110487/
+
+			$questionId = (int)$newData['questionid'];
+			$postId = (int)$newData['postid'];
+			$postType = $newData['posttype'];
+			$parentId = empty($newData['parentid']) ? null : (int)$newData['parentid']; // only C
+			$reasonId = (int)$newData['reasonid'];
+			$notice = empty($newData['notice']) ? null : trim($newData['notice']);
 			
-			$ajaxreturn = '';
+			$ajaxReturn = '';
 			
-			if(empty($questionid) || empty($postid) || empty($posttype) || empty($reasonid))
-			{
-				$reply = array( 'error' => "missing" );
-				echo json_encode( $reply );
+			if(empty($questionId) || empty($postId) || empty($postType) || empty($reasonId)) {
+				$reply = ['error' => 'missing'];
+				echo json_encode($reply);
 				return;
 			}
 			
-			$userid = qa_get_logged_in_userid();		
-			
-			// *** should probably pass and check
-			// qa_page_q_click_check_form_code($question, $error)
+			$userId = qa_get_logged_in_userid();		
 			
 			$error = '';
 			
 			require_once QA_INCLUDE_DIR . 'app/votes.php';
 			require_once QA_INCLUDE_DIR . 'pages/question-view.php';
 			
-			if($posttype == 'q')
-			{
-				// trying to stick to core functions from pages/question.php
+			if($postType == 'q') {
 				$questionData = qa_db_select_with_pending(
-					qa_db_full_post_selectspec($userid, $questionid),
-					qa_db_full_child_posts_selectspec($userid, $questionid),
-					qa_db_full_a_child_posts_selectspec($userid, $questionid),
-					qa_db_post_parent_q_selectspec($questionid),
-					qa_db_post_close_post_selectspec($questionid),
-					false,//qa_db_post_duplicates_selectspec($questionid),
-					qa_db_post_meta_selectspec($questionid, 'qa_q_extra'),
-					qa_db_category_nav_selectspec($questionid, true, true, true),
-					isset($userid) ? qa_db_is_favorite_selectspec($userid, QA_ENTITY_QUESTION, $questionid) : null
+					qa_db_full_post_selectspec($userId, $questionId),
+					qa_db_full_child_posts_selectspec($userId, $questionId),
+					qa_db_full_a_child_posts_selectspec($userId, $questionId),
+					qa_db_post_parent_q_selectspec($questionId),
+					qa_db_post_close_post_selectspec($questionId),
+					false,//qa_db_post_duplicates_selectspec($questionId),
+					qa_db_post_meta_selectspec($questionId, 'qa_q_extra'),
+					qa_db_category_nav_selectspec($questionId, true, true, true),
+					isset($userId) ? qa_db_is_favorite_selectspec($userId, QA_ENTITY_QUESTION, $questionId) : null
 				);
 				
-				list($question, $childposts, $achildposts, $parentquestion, $closepost, $duplicateposts, $extravalue, $categories, $favorite) = $questionData;
+				list($question, $childPosts, $aChildPosts, $parentQuestion, $closePost, $duplicatePosts, $extraValue, $categories, $favorite) = $questionData;
 
-				// check if $userid can flag $post, on the page $topage
-				// last parameter was qa_request(), would be URL ajaxflagger, we use the questionid instead
-				$error = qa_flag_error_html($question, $userid, $questionid);
+				$error = qa_flag_error_html($question, $userId, $questionId);
 				
-				if(!$error)
-				{
+				if(!$error) {
 					$handle = qa_userid_to_handle($userid);
-					$cookieid = qa_cookie_get();
+					$cookieId = qa_cookie_get();
 					
-					$answers = qa_page_q_load_as($question, $childposts);
-					$commentsfollows = qa_page_q_load_c_follows($question, $childposts, $achildposts, $duplicateposts);
-					
-					// set flag by $userid, returns true if to hide
-					if(qa_flag_set_tohide($question, $userid, $handle, $cookieid, $question))
-					{
-						qa_question_set_status($question, QA_POST_STATUS_HIDDEN, null, null, null, $answers, $commentsfollows, $closepost); // hiding not really by this user so pass nulls
+					$answers = qa_page_q_load_as($question, $childPosts);
+					$commentsFollows = qa_page_q_load_c_follows($question, $childPosts, $aChildPosts, $duplicatePosts);
+					if(qa_flag_set_tohide($question, $userId, $handle, $cookieId, $question)) {
+						qa_question_set_status($question, QA_POST_STATUS_HIDDEN, null, null, null, $answers, $commentsFollows, $closePost); // hiding not really by this user so pass nulls
 					}
-					
-					// save the flag reason in the plugin table
+	
 					qa_db_query_sub('
 						INSERT INTO `^flagreasons` (`userid`, `postid`, `reasonid`, `notice`) 
 						VALUES (#, #, #, $)
-					', $userid, $postid, $reasonid, $notice);
+					', $userId, $postId, $reasonId, $notice);
 				}
 			}
-			else if($posttype == 'a')
-			{
-				// trying to stick to core functions from pages/question.php
-				$answerid = $postid;
+			else if($postType === 'a') {
+				$answerId = $postId;
 				
-				list($answer, $question, $qchildposts, $achildposts) = qa_db_select_with_pending(
-					qa_db_full_post_selectspec($userid, $answerid),
-					qa_db_full_post_selectspec($userid, $questionid),
-					qa_db_full_child_posts_selectspec($userid, $questionid),
-					qa_db_full_child_posts_selectspec($userid, $answerid)
+				list($answer, $question, $qChildPosts, $aChildPosts) = qa_db_select_with_pending(
+					qa_db_full_post_selectspec($userId, $answerId),
+					qa_db_full_post_selectspec($userId, $questionId),
+					qa_db_full_child_posts_selectspec($userId, $questionId),
+					qa_db_full_child_posts_selectspec($userId, $answerId)
 				);
 				
-				$answers = qa_page_q_load_as($question, $qchildposts);
-				// $question = $question + qa_page_q_post_rules($question, null, null, $qchildposts); // array union
-				// $answer = $answer + qa_page_q_post_rules($answer, $question, $qchildposts, $achildposts);
-				$commentsfollows = qa_page_q_load_c_follows($question, $qchildposts, $achildposts);
+				$answers = qa_page_q_load_as($question, $qChildPosts);
+				$commentsFollows = qa_page_q_load_c_follows($question, $qChildPosts, $aChildPosts);
 				
-				// check if $userid can flag $post, on the page $topage
-				// last parameter was qa_request(), would be URL ajaxflagger, we use the questionid instead
-				$error = qa_flag_error_html($answer, $userid, $questionid);
+				$error = qa_flag_error_html($answer, $userId, $questionId);
 				
-				if(!$error)
-				{
-					$handle = qa_userid_to_handle($userid);
-					$cookieid = qa_cookie_get();
-					
-					// set flag by $userid, returns true if to hide
-					if(qa_flag_set_tohide($answer, $userid, $handle, $cookieid, $question))
-					{
-						qa_answer_set_status($answer, QA_POST_STATUS_HIDDEN, null, null, null, $question, $commentsfollows); // hiding not really by this user so pass nulls
+				if(!$error) {
+					$handle = qa_userid_to_handle($userId);
+					$cookieId = qa_cookie_get();
+
+					if(qa_flag_set_tohide($answer, $userId, $handle, $cookieId, $question)) {
+						qa_answer_set_status($answer, QA_POST_STATUS_HIDDEN, null, null, null, $question, $commentsFollows); // hiding not really by this user so pass nulls
 					}
-					
-					// save the flag reason in the plugin table
+
 					qa_db_query_sub('
 						INSERT INTO `^flagreasons` (`userid`, `postid`, `reasonid`, `notice`) 
 						VALUES (#, #, #, $)
-					', $userid, $postid, $reasonid, $notice);
+					', $userId, $postId, $reasonId, $notice);
 				}
 			}
-			else if($posttype == 'c')
-			{
-				// trying to stick to core functions from pages/question.php
-				$commentid = $postid;
+			else if($postType === 'c') {
+
+				$commentId = $postId;
 				
 				list($comment, $question, $parent, $children) = qa_db_select_with_pending(
-					qa_db_full_post_selectspec($userid, $commentid),
-					qa_db_full_post_selectspec($userid, $questionid),
-					qa_db_full_post_selectspec($userid, $parentid),
-					qa_db_full_child_posts_selectspec($userid, $parentid)
+					qa_db_full_post_selectspec($userId, $commentId),
+					qa_db_full_post_selectspec($userId, $questionId),
+					qa_db_full_post_selectspec($userId, $parentId),
+					qa_db_full_child_posts_selectspec($userId, $parentId)
 				);
 				
-				$comment = qa_db_select_with_pending(qa_db_full_post_selectspec($userid, $commentid));
+				$comment = qa_db_select_with_pending(qa_db_full_post_selectspec($userId, $commentId));
+				$error = qa_flag_error_html($comment, $userId, $questionId);
 				
-				// check if $userid can flag $post, on the page $topage
-				// last parameter was qa_request(), would be URL ajaxflagger, we use the questionid instead
-				$error = qa_flag_error_html($comment, $userid, $questionid);
-				
-				if(!$error)
-				{
+				if(!$error) {
 					$handle = qa_userid_to_handle($userid);
-					$cookieid = qa_cookie_get();
-					
-					// set flag by $userid, returns true if to hide
-					if(qa_flag_set_tohide($comment, $userid, $handle, $cookieid, $question))
-					{
+					$cookieId = qa_cookie_get();
+
+					if(qa_flag_set_tohide($comment, $userId, $handle, $cookieId, $question)) {
 						qa_comment_set_status($comment, QA_POST_STATUS_HIDDEN, null, null, null, $question, $parent); // hiding not really by this user so pass nulls
 					}
-					
-					// save the flag reason in the plugin table
+
 					qa_db_query_sub('
 						INSERT INTO `^flagreasons` (`userid`, `postid`, `reasonid`, `notice`) 
 						VALUES (#, #, #, $)
-					', $userid, $postid, $reasonid, $notice);
+					', $userId, $postId, $reasonId, $notice);
 				}
 			}
 
-			if($error)
-			{
-				$reply = array(
+			if($error) {
+				$reply = [
 					'error' => $error,
-				);
-				echo json_encode( $reply );
+				];
+				echo json_encode($reply);
 				return;
 			}
 			
-			$reply = array(
+			$reply = [
 				'success' => '1',
-			);
-			echo json_encode( $reply );
+			];
+			echo json_encode($reply);
 			return;
 
-		} // END AJAX RETURN
-		else 
-		{
+		} else {
 			echo 'Unexpected problem detected. No transfer string.';
 			exit();
 		}
 		
 		return $qa_content;
-	} // end process_request
+	}
 	
-}; // END q2apro_flag_reasons_page
+}

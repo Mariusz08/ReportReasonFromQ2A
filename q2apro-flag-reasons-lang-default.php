@@ -4,18 +4,18 @@
 */
 
 return array(
-	'reason' => 'Powod:',
-	'reason_spam' => 'Spam',
-	'reason_quality' => 'Niska wydajnosc',
-	'reason_rude' => 'Insulting',
-	'reason_edit' => 'Edit necessary',
-	'reason_duplicate' => 'Duplikat',
-	'reason_offtopic' => 'Off-topic',
-	'reason_migrate' => 'Migracja',
-	'reason_close' => 'Zamkniêty',
+	'reason' => 'Pow&#243;d:',
+	'reason_spam' => 'Kod bez bloczka',
+	'reason_quality' => 'SPAM',
+	'reason_rude' => 'Duplikat',
+	'reason_edit' => 'Z&#322;e otagowanie',
+	'reason_duplicate' => 'Niepoprawna kategoria',
+	'reason_offtopic' => 'Obraza',
+	'reason_migrate' => 'Inne',
+	'reason_close' => 'Niepoprawna kategoria',
 	'reason_other' => 'Inne',
 	'note' => 'Notatka:',
 	'enter_details' => 'Wpisz notatke',
-	'send' => 'Wyslij',
+	'send' => 'Wy&#347;lij',
 	'flaglist_head' => 'Flagi:',
 );

@@ -1,40 +1,30 @@
 <?php
-/*
-	Plugin Name: On-Site-Notifications
-*/
 
 class q2apro_flagreasons_event
 {
-	function process_event($event, $userid, $handle, $cookieid, $params)
+	public function process_event($event, $userId, $handle, $cookieId, $params)
 	{
-		$flagevents = array('q_unflag', 'a_unflag', 'c_unflag');
+		$flagEvents = ['q_unflag', 'a_unflag', 'c_unflag'];
 		
-		if(in_array($event, $flagevents))
-		{
-			$postid = $params['postid'];
-			
-			// remove post flag by userid
+		if(in_array($event, $flagEvents)) {
+			$postId = $params['postid'];
+
 			qa_db_query_sub('
 				DELETE FROM `^flagreasons` 
 				WHERE userid = #
 				AND postid = #
-			', $userid, $postid);
+			', $userId, $postId);
 		}
+		$flagEvents2 = ['q_clearflags', 'a_clearflags', 'c_clearflags'];
 		
-		// admin, editor or moderator removes all flags of post
-		$flagevents2 = array('q_clearflags', 'a_clearflags', 'c_clearflags');
-		
-		if(in_array($event, $flagevents2))
-		{
-			// if(qa_get_logged_in_level() >= QA_USER_LEVEL_EDITOR)
-			$postid = $params['postid'];
-
-			// remove all flags for this post
+		if(in_array($event, $flagEvents2)) {
+			if(qa_get_logged_in_level() >= QA_USER_LEVEL_EDITOR) {
+			$postId = $params['postid'];
+			}
 			qa_db_query_sub('
 				DELETE FROM `^flagreasons` 
 				WHERE postid = #
-			', $postid);
+			', $postId);
 		}
-	} // end process_event
-	
-} // end class
+	}
+}

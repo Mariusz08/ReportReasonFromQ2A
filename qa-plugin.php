@@ -1,11 +1,11 @@
 <?php
 /*
-	Plugin Name: Flag Reason
-	Plugin URI: https://github.com/Mariusz08/ReportReasonFromQ2A && https://github.com/q2apro/q2apro-flag-reasons
+	Plugin Name: Flag Reasons
+	Plugin URI: https://forum.pasja-informatyki.pl && https://github.com/q2apro/q2apro-flag-reasons
 	Plugin Description: Adds choice of flag reasons and notice option to each flag vote
-	Plugin Version: 0.2
-	Plugin Date: 2018-03-05
-	Plugin Author: forum.pasja-informatyki.pl/user/Mariusz08
+	Plugin Version: 0.1
+	Plugin Date: 2018-04-01
+	Plugin Author: http://forum.pasja-informatyki.pl/user/Mariusz08 && http://q2apro.com
 	Plugin License: GPLv3
 	Plugin Minimum Question2Answer Version: 1.7
 	Plugin Update Check URI: 
@@ -47,7 +47,7 @@ qa_register_plugin_module('event', 'q2apro-flag-reasons-event.php','q2apro_flagr
 
 
 
-function q2apro_flag_reasonid_to_readable($reasonid)
+function q2apro_flag_reasonid_to_readable($reasonId)
 {
 	/*
 	Reasonids for Flags:
@@ -59,7 +59,7 @@ function q2apro_flag_reasonid_to_readable($reasonid)
 	6 - migrate
 	*/
 	
-	switch($reasonid)
+	switch($reasonId)
 	{
 		case 1:
 			return qa_lang('q2apro_flagreasons_lang/reason_quality');
@@ -84,19 +84,19 @@ function q2apro_flag_reasonid_to_readable($reasonid)
 	}
 }
 
-function q2apro_get_postflags($postid)
+function q2apro_get_postflags($postId)
 {
 	return qa_db_read_all_assoc( qa_db_query_sub('
 			SELECT userid, postid, reasonid, notice 
 			FROM ^flagreasons
 			WHERE postid = #
-			', $postid
+			', $postId
 			));
 }
 
-function q2apro_count_postflags_output($postid)
+function q2apro_count_postflags_output($postId)
 {
-	$flags = q2apro_get_postflags($postid);
+	$flags = q2apro_get_postflags($postId);
 	
 	$flagoutput = '';
 	
@@ -108,10 +108,10 @@ function q2apro_count_postflags_output($postid)
 		$flagoutput .= '✌ '.q2apro_flag_reasonid_to_readable($flag['reasonid']).' ('.$handle;
 		if(!empty($flag['notice']))
 		{
-			$flagoutput .= ' “'.$flag['notice'].'”';
+			$flagOutput .= ' “'.$flag['notice'].'”';
 		}
-		$flagoutput .= ')';
+		$flagOutput .= ')';
 	}
 	
-	return $flagoutput;	
+	return $flagOutput;	
 }
