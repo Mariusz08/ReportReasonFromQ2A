@@ -162,7 +162,9 @@ ini_set('display_errors', 1);
 				$flagInfo = q2apro_count_postflags_output($post['raw']['postid']);
 				
 				if(!empty($flagInfo)) {
-					$post['flags']['suffix'] .= ': <br>'.$flagInfo;
+					if(qa_get_logged_in_level() > QA_USER_LEVEL_EXPERT) {
+						$post['flags']['suffix'] .= ': <br>'.$flagInfo;
+					}
 				}
 			}
 		}

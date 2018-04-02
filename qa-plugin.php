@@ -1,11 +1,11 @@
 <?php
 /*
 	Plugin Name: Flag Reasons
-	Plugin URI: https://forum.pasja-informatyki.pl && https://github.com/q2apro/q2apro-flag-reasons
+	Plugin URI: https://forum.pasja-informatyki.pl & https://github.com/q2apro/q2apro-flag-reasons
 	Plugin Description: Adds choice of flag reasons and notice option to each flag vote
 	Plugin Version: 0.1
 	Plugin Date: 2018-04-01
-	Plugin Author: http://forum.pasja-informatyki.pl/user/Mariusz08 && http://q2apro.com
+	Plugin Author: https://forum.pasja-informatyki.pl & http://q2apro.com
 	Plugin License: GPLv3
 	Plugin Minimum Question2Answer Version: 1.7
 	Plugin Update Check URI: 
@@ -98,14 +98,14 @@ function q2apro_count_postflags_output($postId)
 {
 	$flags = q2apro_get_postflags($postId);
 	
-	$flagoutput = '';
+	$flagOutput = '';
 	
 	// count reasons
 	foreach($flags as $flag)
 	{
 		$handle = qa_userid_to_handle($flag['userid']);
-		$flagoutput .= (empty($flagoutput) ? '' : '<br>');
-		$flagoutput .= '✌ '.q2apro_flag_reasonid_to_readable($flag['reasonid']).' ('.$handle;
+		$flagOutput .= (empty($flagoutput) ? '' : '<br>');
+		$flagOutput .= '✌ '.q2apro_flag_reasonid_to_readable($flag['reasonid']).' ('.$handle;
 		if(!empty($flag['notice']))
 		{
 			$flagOutput .= ' “'.$flag['notice'].'”';
