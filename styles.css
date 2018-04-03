@@ -3,7 +3,6 @@
 	min-width:250px;
 	position:relative;
 	background: #a278e2;
-        //background:#FFC;
 	border:1px solid #FCC;
 	padding:35px;
 	margin:10px 0 30px 0;
@@ -78,7 +77,12 @@ input[name="qa-spam-reason-radio"]:checked+span { font-weight: bold; }
 	max-width:90%;
 	margin-bottom:30px;
 	padding:20px 20px 5px 20px;
-	background:#a278e2;
-	color:#333;
+	background:#34495e;//#3498db;
+	color:#3498db;
 	border:1px solid #F9A;
+        font-weight: bold;
+}
+.qa-flagreasons a, a:hover {
+	color: #3498db;
+	text-decoration: underline;
 }
